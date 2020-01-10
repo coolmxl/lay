@@ -1,0 +1,304 @@
+<style>
+    .bold {
+        font-weight: bold;
+    }
+
+    .head-box {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .margin-top10 {
+        margin-top: 10px;
+    }
+
+    .margin-top20 {
+        margin-top: 20px;
+    }
+
+    .margin-top30 {
+        margin-top: 30px;
+    }
+
+    .baseInfo {
+        padding-left: 30px;
+    }
+
+    .layui-rate {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .head-title {
+        display: flex;
+        align-items: center;
+    }
+
+    .head-img {
+        width: 70px;
+        height: 70px;
+        background: fuchsia;
+        border-radius: 50%;
+        margin-right: 2%;
+    }
+</style>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class=" layui-card-header" lay-filter="layadmin-activity-formlist">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend> <span class="bold">详情</span> </legend>
+            </fieldset>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-col-md12">
+                    <!-- 详情 -->
+                    <div id="detail-view"></div>
+                    <!-- 评价 -->
+                    <div class="layui-row">
+                        <fieldset class="layui-elem-field layui-field-title">
+                            <legend> <span class="bold">评论</span> </legend>
+                        </fieldset>
+                        <div class="layui-col-md12" id="bbsComment">
+
+                        </div>
+                        <div id="pageHelper"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- 评论 -->
+<script type="text/html" id="comment">
+    {{#  layui.each(d, function(index, item){ }}
+        <ul class="layuiadmin-card-status layuiadmin-home2-usernote " >
+            <li>
+                <h3>{{item.nickName}}</h3>
+                <p>{{item.content}}</p>
+                <span>{{item.createDate}}</span>
+                <a href="javascript:;" class="layui-btn layui-btn-xs " onclick="commentDelete('{{ item.id }}')">删除</a>
+                {{#   layui.each(item.replies, function(index, item){ }}
+                    <ul class="layuiadmin-card-status layuiadmin-home2-usernote" style="    padding: 22px 10px 0px 10px;">
+                        <li style="background:#f2f2f2;padding:0;">
+                            <h3>{{item.nickName}}</h3>
+                            <p>{{item.content}}</p>
+                            <span>{{item.createDate}}</span>
+                            <a href="javascript:;" class="layui-btn layui-btn-xs" onclick="commentReplyDelete('{{item.id}}')">删除回复</a>
+                        </li>
+                    </ul>
+                {{#  }); }}
+            </li>
+        </ul>
+    {{#  }); }}
+
+</script>
+
+
+<!-- 详情展示 -->
+<script type="text/html" id="detail">
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <!-- 头部 -->
+                <div class="head-box">
+                    <!-- 轮播 -->
+                    <div>
+                        <div class="layui-carousel" id="test10">
+                            <div carousel-item="">
+                                {{#  layui.each(d.images, function(index, item){ }}
+                                <div><img width="100%" height="100%" src="{{'http://asryc.antony0127.cn/asryc/file-service/'+item.url}}"></div>
+                                {{#  }); }}
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 基础信息 -->
+                    <div class="baseInfo ">
+                        <div class="head-title">
+                            <img  class="head-img" src="{{d.avatarUrl}}" alt="">
+                            <!-- <div class="head-img"></div> -->
+                            <div class="head-info" style="width:300px">
+                                <h2>{{d.nickName}}</h2>
+                                <p class="margin-top20">
+                                    <span class="bold">发帖时间:</span>
+                                    {{d.createDate}}
+                                </p>
+                            </div>
+                        </div>
+                        <p class="margin-top10">
+                            <span class="bold">所属类别:</span>
+                            {{d.category}}
+                        </p>
+                    </div>
+    
+                </div>
+            </div>
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header" style="font-weight:800">
+                        标题：{{d.title}}
+                    </div>
+                    <div class="layui-card-body">
+                        {{d.content}}
+                    </div>
+                </div>
+            </div>
+        </div>
+</script>
+
+
+
+<script>
+    layui.use('api', layui.factory('api')).use(['admin', 'form', 'laytpl', 'carousel', 'table', 'rate', 'laypage'], function () {
+        var $ = layui.$,
+            laypage = layui.laypage,
+            laytpl = layui.laytpl,
+            api = layui.api,
+            carousel = layui.carousel,
+            table = layui.table,
+            rate = layui.rate,
+            form = layui.form;
+        const router = layui.router();
+        //删除评论
+        window.commentDelete = function(id){
+            console.log(id);
+            api.myDelete("http://asryc.antony0127.cn/asryc/bbs-service/admin/bss/comment/delete/",id).then(res=>{
+                if(res){
+                    layer.msg("删除成功")
+                    location.reload()
+                }
+            })
+        }
+        window.commentReplyDelete = function(id){
+            console.log(id);
+            api.myDelete("http://asryc.antony0127.cn/asryc/bbs-service/admin/bbs/commentReply/delete/",id).then(res=>{
+                if(res){
+                    layer.msg("删除成功")
+                    location.reload()
+                }
+            })
+        }
+
+        //分页 
+        getDate1({
+            bbsId: router.search.id,
+            pageNo: 1,
+            pageSize: 10
+        }, "http://asryc.antony0127.cn/asryc/bbs-service/admin/bss/comment/page")
+        // 评论列表
+        const formData = {
+            bbsId: router.search.id
+        }
+        function getDate1(data,url){
+            console.log(123);
+            console.log(url);
+            
+            $.ajax({
+                url: url,
+                type: "post",
+                contentType: "application/json",
+                headers: {
+                    "api-version": layui.data('layuiAdmin').apiVersion,
+                    "Authorization": layui.data('layuiAdmin').token
+                },
+                dataType: "json",
+
+                data:JSON.stringify(data),
+                success: function (res) {
+                    if (res.status == 200) {
+                    console.log(res)
+
+                        var getTpl = comment.innerHTML,
+                        view1 = document.getElementById('bbsComment');
+                    laytpl(getTpl).render(res.data, function (html) {
+                        view1.innerHTML = html;
+                    });
+
+                    var total = res.detail.totalCount
+                    pageHelper(total, res.detail.pageNo + 1);
+                    }
+                },
+                error(err){
+                    console.log(err);
+                    
+                }
+            })
+        } 
+        function pageHelper(count, curr) {
+            //总页数大于页码总数
+            laypage.render({
+                elem: 'pageHelper',
+                count: count, //数据总数
+                curr: curr,
+                jump: function (obj, first) {
+                    //首次不执行
+                    if (!first) {
+                        var url =
+                            "http://asryc.antony0127.cn/asryc/bbs-service/admin/bss/comment/page";
+                        var data = {
+                            bbsId: "00ef9ab1-7f60-4bff-b14e-e9e4fef7e1ff",
+                            pageNo: obj.curr,
+                            pageSize: 10
+                        }
+                        getDate1(data, url)
+                    }
+                }
+            });
+        }
+        //常规轮播
+        var _slider = carousel.render({
+            elem: '#test10',
+            width: '600px',
+            height: '280px',
+            arrow: 'always'
+        });
+        const mydetails = function (data) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: 'http://asryc.antony0127.cn/asryc/bbs-service/admin/bss/get/' + data,
+                    contentType: "application/json",
+                    headers: {
+                        "api-version": layui.data('layuiAdmin').apiVersion,
+                        "Authorization": layui.data('layuiAdmin').token
+                    },
+                    dataType: "json",
+                    success: function (res) {
+                        resolve(res)
+                    }
+                })
+            })
+        }
+            ; (async function () {
+                let res = await mydetails(router.search.id)
+                const data = res.data
+                console.log(data);
+                // let url = "";
+                // data.imageVOS.map(x=>{
+                //     console.log(x.url);
+                //     url = `<img src="http://asryc.antony0127.cn/asryc/file-service/${x.url}">`
+                //     $("#slider").append(url)
+                // })
+
+                var getTpl = detail.innerHTML,
+                    view = document.getElementById('detail-view');
+                laytpl(getTpl).render(data, function (html) {
+                    view.innerHTML = html;
+                });
+                _slider.reload({
+                    elem: '#test10',
+                    width: '600px',
+                    height: '280px',
+                    arrow: 'always'
+                })
+            })()
+        //显示文字
+        rate.render({
+            elem: '#test2',
+            readonly: true,
+            text: true //开启文本
+        });
+
+    })
+</script>

@@ -1,0 +1,93 @@
+<title>店铺商家</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>用户</cite></a>
+    <a><cite>店铺商家</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-userfront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">ID</label>
+          <div class="layui-input-block">
+            <input type="text" name="id" placeholder="请输入id" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <label class="layui-form-label">店名</label>
+          <div class="layui-input-block">
+            <input type="text" name="companyName" placeholder="请输入店铺名称" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <label class="layui-form-label">联系方式</label>
+          <div class="layui-input-block">
+            <input type="text" name="phoneNum" placeholder="请输入联系方式" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-shop-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" id="myRefresh">
+            <i class="layui-icon layui-icon-refresh layuiadmin-button-btn"></i>重置
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layui-card-body">
+      <!-- <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="batchdel">删除</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+      </div> -->
+      <table id="LAY-shopApply-manage" lay-filter="LAY-shopApply-manage"></table>
+      <script type="text/html" id="table-shop-shop">
+        {{# if(d.status == "APPLY_WAIT"){ }}
+        <button class="layui-btn layuiadmin-btn-useradmin" lay-event="refuse">驳回</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" lay-event="agree">同意</button>
+        {{#  } }}
+        {{# if(d.status == "APPLY_COMPLETE"){ }}
+          <span style="color:green;font-weight:700">已通过</span>
+        {{#  } }}
+        {{# if(d.status == "APPLY_REJECT"){ }}
+        <span style="color:red;font-weight:700">已驳回</span>
+        {{#  } }}
+      </script>
+    </div>
+  </div>
+</div>
+<script>
+  layui.use('shopApply', layui.factory('shopApply')).use(['admin', 'useradmin', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form;
+
+    form.render(null, 'layadmin-userfront-formlist');
+    $("#myRefresh").on('click', function () {
+      location.reload()
+    })
+    //监听搜索
+    form.on('submit(LAY-shop-front-search)', function (data) {
+      var field = data.field;
+      console.log(field)
+      if (!field.id && !field.companyName && !field.phoneNum) {
+        layer.msg("请输入内容")
+        return false
+      }
+      //执行重载
+      table.reload('LAY-shopApply-manage', {
+        where: field
+      });
+    });
+  });
+</script>

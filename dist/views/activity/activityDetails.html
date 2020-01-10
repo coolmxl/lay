@@ -1,0 +1,276 @@
+<style>
+    .bold {
+        font-weight: bold;
+    }
+
+    .head-box {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .margin-top10 {
+        margin-top: 10px;
+    }
+
+    .margin-top20 {
+        margin-top: 20px;
+    }
+
+    .margin-top30 {
+        margin-top: 30px;
+    }
+
+    .baseInfo {
+        padding-left: 30px;
+    }
+
+    .layui-rate {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+</style>
+
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class=" layui-card-header" lay-filter="layadmin-activity-formlist">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend> <span class="bold">详情</span> </legend>
+            </fieldset>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-col-md12">
+                    <!-- 详情 -->
+                    <div id="detail-view"></div>
+                    <!-- 评价 -->
+                    <div class="layui-row">
+                        <fieldset class="layui-elem-field layui-field-title">
+                            <legend> <span class="bold">活动评论</span> </legend>
+                        </fieldset>
+                        <div class="layui-col-md12">
+                            <table id="LAY-activity-details" lay-filter="LAY-activity-details"></table>
+                            <script type="text/html" id="table-avtivity-list-details">
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 详情展示 -->
+<script type="text/html" id="detail">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <!-- 头部 -->
+            <div class="head-box">
+                <!-- 轮播 -->
+                <div>
+                    <div class="layui-carousel" id="test10">
+                        <div carousel-item="">
+                            {{#  layui.each(d.imageVOS, function(index, item){ }}
+                            <div><img width="100%" height="100%" src="{{'http://asryc.antony0127.cn/asryc/file-service/'+item.url}}"></div>
+                            {{#  }); }}
+                            
+                        </div>
+                    </div>
+                </div>
+                <!-- 基础信息 -->
+                <div class="baseInfo ">
+                    <h2>{{d.title}}</h2>
+                    <p class="margin-top20">
+                        <span class="bold">时间:</span>
+                        {{d.day}} {{d.time}}
+                    </p>
+                    <p class="margin-top10">
+                        <span class="bold">城市:</span>
+                        {{d.cityVO.name}}
+                    </p>
+                    <p class="margin-top10">
+                        <span class="bold">地点:</span>
+                        {{d.addressVO.address}}
+                    </p>
+                    <p class="margin-top10">
+                        <span class="bold">价格:</span>
+                        {{d.price}}
+                    </p>
+                    <p class="margin-top10">
+                        <span class="bold">简介:</span>
+                        {{d.info}}
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    详情
+                </div>
+                <div class="layui-card-body">
+                    {{d.detail}}
+                </div>
+
+            </div>
+
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    流程
+                </div>
+                <div class="layui-card-body">
+                    {{d.path}}
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="rater">
+    <!-- {{d.star}} -->
+    {{# for(var i = 0; i< d.star; i++){ }}
+    <i class="layui-icon layui-icon-rate-solid" style=" color: #5FB878;"></i>
+    {{# } }}
+</script>
+
+<script>
+    layui.use(['admin', 'form', 'laytpl', 'carousel', 'table', 'rate'], function () {
+        var $ = layui.$,
+            laytpl = layui.laytpl,
+
+            carousel = layui.carousel,
+            table = layui.table,
+            rate = layui.rate,
+            form = layui.form;
+        const router = layui.router();
+
+        //常规轮播
+        var _slider = carousel.render({
+            elem: '#test10',
+            width: '600px',
+            height: '280px',
+            arrow: 'always'
+        });
+        const mydetails = function (data) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: 'http://asryc.antony0127.cn/asryc/product-service/admin/activity/get/' + data,
+                    contentType: "application/json",
+                    headers: {
+                        "api-version": layui.data('layuiAdmin').apiVersion,
+                        "Authorization": layui.data('layuiAdmin').token
+                    },
+                    dataType: "json",
+                    success: function (res) {
+                        resolve(res)
+                    }
+                })
+            })
+        }
+        ; (async function () {
+            let res = await mydetails(router.search.id)
+            const data = res.data
+            console.log(data);
+            // let url = "";
+            // data.imageVOS.map(x=>{
+            //     console.log(x.url);
+            //     url = `<img src="http://asryc.antony0127.cn/asryc/file-service/${x.url}">`
+            //     $("#slider").append(url)
+            // })
+
+
+            var getTpl = detail.innerHTML,
+                view = document.getElementById('detail-view');
+            laytpl(getTpl).render(data, function (html) {
+                view.innerHTML = html;
+            });
+            _slider.reload({
+                elem: '#test10',
+                width: '600px',
+                height: '280px',
+                arrow: 'always'
+            })
+        })()
+        //显示文字
+        rate.render({
+            elem: '#test2',
+            readonly: true,
+            text: true //开启文本
+        });
+        const formData = {
+            goodsId: router.search.id
+        }
+        console.log(formData);
+        table.render({
+            elem: '#LAY-activity-details',
+            url: 'http://asryc.antony0127.cn/asryc/product-service/admin/order/comment/page',
+            parseData: function (res) {
+                console.log(res)
+                return {
+                    "code": 0,
+                    "msg": "",
+                    "count": res.detail.totalCount,
+                    data: res.data
+                }
+            },
+            where: formData,
+            method: "POST",
+            contentType: 'application/json',
+            headers: {
+                "api-version": layui.data('layuiAdmin').apiVersion,
+                "Authorization": layui.data('layuiAdmin').token
+            },
+            request: { //request设置，默认值如下
+                pageName: 'pageNo',
+                limitName: 'pageSize'
+            },
+            page: true,
+            limit: 10,
+            cols: [
+                [{
+                    type: 'checkbox',
+                    fixed: 'left'
+                }, {
+                    field: 'userId',
+                    title: 'ID',
+                    sort: true
+                }, {
+                    field: 'name',
+                    title: '名称'
+                }, {
+                    field: 'content',
+                    title: '内容',
+                }, {
+                    field: 'createDate',
+                    title: '评论日期',
+                    sort: true
+                }, {
+                    field: 'headImg',
+                    title: '图片url',
+                }, {
+                    field: 'star',
+                    title: '星级',
+                    templet:"#rater"
+                }, {
+                    title: '操作',
+                    width: 150,
+                    align: 'center',
+                    fixed: 'right',
+                    toolbar: '#table-avtivity-list-details'
+                }]
+            ],
+            page: true,
+            limit: 10,
+            height: 'full-320',
+            text: {
+            none: '暂无相关数据',
+            error: '接口请求异常'
+            }
+        });
+    })
+</script>

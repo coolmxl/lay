@@ -1,0 +1,43 @@
+<div id="test1"></div>
+<script>
+    layui.use('api', layui.factory('api')).use(['admin', 'form', 'upload','tree'], function () {
+        var $ = layui.$,
+            form = layui.form,
+            api = layui.api,
+            tree = layui.tree,
+            upload = layui.upload;
+
+        api.myGet("http://asryc.antony0127.cn/asryc/product-service/admin/course/category/list")
+            .then(res => {
+                const data = res.data
+                console.log(data);
+                var inst1 = tree.render({
+                    elem: '#test1'  //绑定元素
+                    , data: data
+                });
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        //上传头像
+        upload.render({
+            elem: '#layuiadmin-upload-shop-headImg',
+            url: './json/upload/demo.js',
+            accept: 'images',
+            method: 'POST',
+            acceptMime: 'image/*',
+            error: function () {
+                //请求异常回调
+            },
+            done: function (res) {
+                $(this.item).prev("div").children("input").val(res.data.src)
+            }
+        });
+
+        // form.on("submit(LAY-admin-shop-submit)", function (obj) {
+        //   console.log(obj.field)
+        // })
+
+
+    })
+</script>

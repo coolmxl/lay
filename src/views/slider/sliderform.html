@@ -1,0 +1,86 @@
+<div class="layui-form" lay-filter="layuiadmin-form-shop" style="padding: 20px 0 0 0;">
+        <div class="layui-form-item">
+          <div class="layui-input-inline">
+            <script type="text/html" template>
+              <input type="hidden" name="id" value="{{ d.params.id || '' }}"  
+                autocomplete="off" class="layui-input">
+            </script>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">目标地址</label>
+          <div class="layui-input-inline">
+            <script type="text/html" template>
+              <input type="text" name="url" value="{{ d.params.url || '' }}" lay-verify="required" placeholder="请输入商店简介"
+                autocomplete="off" class="layui-input">
+            </script>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">轮播图片</label>
+          <div class="layui-input-inline" >
+            <script type="text/html" template>
+              <input readonly type="text" name="img" value="{{ d.params.img || '' }}" id="myInput" placeholder="轮播图片url上传之后显示"
+                autocomplete="off" class="layui-input">
+            </script>
+          </div>
+          <div class="layui-upload">
+            <button type="button" class="layui-btn" id="test1">上传图片</button>
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="demo1" width="50">
+                <p id="demoText"></p>
+            </div>
+        </div>  
+
+          
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label"></label>
+          <div class="layui-input-inline">
+            <input type="button" lay-submit lay-filter="LAY-admin-shop-submit" value="确认" class="layui-btn">
+          </div>
+        </div>
+        <!-- <div class="layui-trans layadmin-user-login-footer">
+          <p>提示：店铺与用户默认通过手机号关联，后期可自行修改</p>
+        </div> -->
+      </div>
+      
+      <script>
+        
+        layui.use('mySlider', layui.factory('mySlider')).use(['admin', 'form', 'upload'], function () {
+          var $ = layui.$,
+            form = layui.form,
+            upload = layui.upload;
+            var url = ''
+            //上传头像
+            var uploadInst = upload.render({
+              elem: '#test1'
+              ,url: 'http://asryc.antony0127.cn/asryc/file-service/file/upload?serviceName=product-service&fileType=PICTURE',
+              contentType: 'application/json',
+              headers: {
+                  "api-version": layui.data('layuiAdmin').apiVersion,
+                  "Authorization": layui.data('layuiAdmin').token
+              }
+              ,before: function(obj){
+              //预读本地文件示例，不支持ie8
+                  obj.preview(function(index, file, result){
+                      $('#demo1').attr('src', result); //图片链接（base64）
+                  });
+              }
+              ,done: function(res){
+                  console.log(res);
+                  url = res.url
+                  $("#myInput").val(res.data.url)
+              }
+              ,error: function(){
+              //演示失败状态，并实现重传
+                  var demoText = $('#demoText');
+                  demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                  demoText.find('.demo-reload').on('click', function(){
+                      uploadInst.upload();
+                  });
+                  }
+              });
+            })
+
+      </script>

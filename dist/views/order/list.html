@@ -1,0 +1,146 @@
+<title>店铺商家</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>用户</cite></a>
+    <a><cite>店铺商家</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-userfront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">订单编号</label>
+          <div class="layui-input-block">
+            <input type="text" name="orderNo" placeholder="请输入订单编号" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <label class="layui-form-label">店名</label>
+          <div class="layui-input-block">
+            <input type="text" name="shopName" placeholder="请输入店铺名称" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <label class="layui-form-label">状态</label>
+          <div class="layui-input-block">
+            <select id="selectStatus" name="status">
+              <option value=""></option>
+            </select>
+          </div>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-shop-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" id="myRefresh">
+            <i class="layui-icon layui-icon-refresh layuiadmin-button-btn"></i>重置
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layui-card-body">
+      <table id="LAY-shop-manage" lay-filter="LAY-shop-manage"></table>
+      <script type="text/html" id="statusTpl">
+        {{# if(d.status == "EXPIRED"){ }}
+        <div style="color:red;font-weight:600">已过期</div>
+        {{#  } }}
+        {{# if(d.status == "VERIFY"){ }}
+        <div style="color:green;font-weight:600">已核销</div>
+        {{#  } }}
+        {{# if(d.status == "WAIT_PAYMENT"){ }}
+        <div style="color:rgb(6, 56, 206);font-weight:600">待支付</div>
+        {{#  } }}
+        {{# if(d.status == "CANCEL"){ }}
+        <div style="color:pink;font-weight:600">已取消</div>
+        {{#  } }}
+        {{# if(d.status == "REFUND"){ }}
+        <div style="color:rgb(11, 198, 231);font-weight:600">已退款</div>
+        {{#  } }}
+        {{# if(d.status == "PAID"){ }}
+        <div style="color:rgb(57, 6, 177);font-weight:600">已支付</div>
+        {{#  } }}
+      </script>
+      <script type="text/html" id="payMethod">
+        {{# if(d.payMethod == "WX_PAY"){ }}
+        <div style="color:green;font-weight:700">微信</div>
+        {{#  } }}
+        {{# if(d.payMethods == "ALI_PAY"){ }}
+        <div style="color:blue;font-weight:700">支付宝</div>
+        {{#  } }}
+      </script>
+      <script type="text/html" id="table-order-shop">
+        {{# if(d.status == "VERIFY"){ }}
+        <button class="layui-btn layuiadmin-btn-useradmin" disabled="disabled"  style="margin-top: -5px;" lay-submit lay-filter="LAY-shop-front-search">
+          <i class="layui-icon layui-icon-edit layuiadmin-button-btn"></i>已核销
+        </button>
+        {{#  } else{ }}
+        <button class="layui-btn layui-btn layui-btn-normal" style="margin-top: -5px;" lay-submit lay-filter="LAY-shop-front-search">
+          <i class="layui-icon layui-icon-edit layuiadmin-button-btn"></i>核销
+        </button>
+        {{#  } }}
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use('order', layui.factory('order')).use('api', layui.factory('api')).use(['admin', 'useradmin', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form,
+      api = layui.api
+
+    $("#myRefresh").on('click', function () {
+      location.reload()
+    })
+
+    form.render(null, 'layadmin-userfront-formlist');
+
+    //监听搜索
+    form.on('submit(LAY-shop-front-search)', function (data) {
+      var field = data.field;
+      console.log(field)
+      if (!field.orderNo && !field.shopName && !field.status) {
+        layer.msg("请输入内容")
+        return false
+      }
+      //执行重载
+      table.reload('LAY-shop-manage', {
+        where: field
+      });
+    });
+
+    // 获取搜索框数据
+    const myStatus = [{
+      text: "待支付",
+      val: "WAIT_PAYMENT"
+    }, {
+      text: "已取消",
+      val: "CANCEL",
+    }, {
+      text: "已核销",
+      val: "VERIFY",
+    }, {
+      text: "已退款",
+      val: "REFUND",
+    }, {
+      text: "已过期",
+      val: "EXPIRED",
+    }]
+    myStatus.map(x => {
+      console.log(x.val);
+      $("#selectStatus").append(`<option value=${x.val}>${x.text}</option>`)
+    })
+    // 必须加   否则加载不出来
+    form.render('select')
+  });
+</script>

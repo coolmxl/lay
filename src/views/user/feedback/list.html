@@ -1,0 +1,122 @@
+<title>店铺商家</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>用户</cite></a>
+    <a><cite>用户反馈</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-userfront-formlist">
+    </div>
+
+    <div class="layui-card-body">
+
+      <table id="LAY-shop-manage" lay-filter="LAY-shop-manage"></table>
+      <script type="text/html" id="mytype">
+        {{#  if(d.type == "ABOUT_COURSE"){      }}
+        <span style="color:red;font-weight:600" >课程相关</span>
+        {{# }  }}
+        {{# if(d.type == "ABOUT_ACTIVITY"){      }}
+        <span style="color:green;font-weight:600" >活动相关</span>
+        {{# }  }}
+        {{# if(d.type == "ABOUT_SHOP"){      }}
+        <span style="color:blue;font-weight:600" >商家相关</span>
+        {{# }  }}
+        {{#  if(d.type == "ABOUT_APP"){      }}
+        <span style="color:pink;font-weight:600" >小程序相关</span>
+        {{# }  }}
+        {{#  if(d.type == "ABOUT_OTHER"){      }}
+        <span style="color:yellow;font-weight:600" >其他</span>
+        {{# }  }}
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use(['admin', 'useradmin', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form;
+
+    form.render(null, 'layadmin-userfront-formlist');
+
+    //监听搜索
+    form.on('submit(LAY-shop-front-search)', function (data) {
+      var field = data.field;
+      console.log(field)
+      //执行重载
+      table.reload('LAY-shop-manage', {
+        where: field
+      });
+    });
+    table.render({
+    elem: '#LAY-shop-manage',
+    url: 'http://asryc.antony0127.cn/asryc/user-service/admin/opinion/page', //模拟接口,
+    method: "POST",
+    contentType: 'application/json',
+    headers: {
+      "api-version": layui.data('layuiAdmin').apiVersion,
+      "Authorization": layui.data('layuiAdmin').token
+    },
+    request: { //request设置，默认值如下
+      pageName: 'pageNo',
+      limitName: 'pageSize'
+    },
+    page: true,
+    limit: 10,
+    height: 'full-320',
+    parseData: function (res) {
+      console.log(res)
+      return {
+        "code": 0,
+        "msg": "",
+        "count": res.detail.totalCount,
+        data: res.data
+      }
+    },
+    cols: [
+        [{
+          field: 'id',
+          title: 'ID',
+          sort: true
+        },{
+          field: 'nickName',
+          title: '用户名称',
+        },{
+          field: 'content',
+          title: '反馈内容',
+        }, {
+          field: 'phoneNum',
+          title: '电话'
+        }, {
+          field: 'type',
+          title: '问题类型',
+        }, {
+          field: 'userId',
+          title: '用户id'
+        }, {
+          field: 'createDate',
+          title: '创建时间',
+        }, {
+          field: 'nickName',
+          title: '昵称',
+        }, {
+          field: 'type',
+          title: '问题类型',
+          templet:"#mytype"
+        }]
+      ],
+      text: {
+        none: '暂无相关数据',
+        error: '接口请求异常'
+      }
+  });
+  });
+</script>

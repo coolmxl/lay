@@ -1,0 +1,199 @@
+<title>店铺商家</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>用户</cite></a>
+    <a><cite>店铺商家</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+      </div>
+
+      <table id="LAY-city-manage" lay-filter="LAY-city-manage"></table>
+
+
+      <script type="text/html" id="table-shop-shop">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+            class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i
+            class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+
+</script>
+<script >
+  layui.use('city2', layui.factory('city2')).use(['admin', 'useradmin', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form;
+
+    form.render(null, 'layadmin-userfront-formlist');
+
+    //监听搜索
+    form.on('submit(LAY-shop-front-search)', function (data) {
+      var field = data.field;
+      console.log(field)
+      //执行重载
+      table.reload('LAY-city-manage', {
+        where: field
+      });
+    });
+    table.render({
+      elem: '#LAY-city-manage'
+      ,url:'http://asryc.antony0127.cn/asryc/product-service/admin/city/page'
+      , method: "POST",
+        contentType: 'application/json',
+        headers: {
+          "api-version": layui.data('layuiAdmin').apiVersion,
+          "Authorization": layui.data('layuiAdmin').token
+        },
+        request:{
+          pageName:"pageNo",
+          limitName:"pageSize"
+        },
+        page:true,
+        limit:10,
+        height: 'full-320',
+        parseData: function (res) {
+          console.log(res)
+          return {
+            "code": 0,
+            "msg": "",
+            "count": res.detail.totalCount,
+            data: res.data
+          }
+        },
+        cols: [
+            [{
+                field: 'id',
+                title: 'ID',
+                sort: true
+              }, {
+                field: 'name',
+                title: '城市',
+                width: 100,
+              }, {
+                field: 'weight',
+                title: '权重',
+                width: 100,
+              }, {
+              title: '操作',
+              width: 250,
+              align: 'center',
+              fixed: 'right',
+              toolbar: '#table-shop-shop'
+            }]
+          ],
+          text: {
+            none: '暂无相关数据',
+            error: '接口请求异常'
+          }
+    });
+
+    //事件
+    var active = {
+      batchdel: function () {
+        var checkStatus = table.checkStatus('LAY-city-manage'),
+          checkData = checkStatus.data; //得到选中的数据
+
+        if (checkData.length === 0) {
+          return layer.msg('请选择数据');
+        }
+
+        layer.prompt({
+          formType: 0,
+          title: '敏感操作，请输入“删除”'
+        }, function (value, index) {
+          let arrId = [] 
+          checkData.map(x=>{
+            arrId.push(x.id)
+          })
+          console.log(arrId)
+          // if (value === '删除') {
+          //   layer.confirm('确定删除吗？', function (index) {
+
+          //     //执行 Ajax 后重载
+          //     /*
+          //     admin.req({
+          //       url: 'xxx'
+          //       //,……
+          //     });
+          //     */
+          //     // table.reload('LAY-shop-manage');
+          //     layer.msg('已删除');
+          //   });
+          // } else {
+          //   layer.msg('输入错误，删除失败');
+          // }
+
+        });
+      },
+      add: function () {
+        admin.popup({
+          title: '添加城市',
+          area: ['500px', '500px'],
+          id: 'LAY-popup-user-add',
+          success: function (layero, index) {
+            view(this.id).render('city/cityform').done(function () {
+              form.render(null, 'layuiadmin-form-useradmin');
+              //监听提交
+              form.on('submit(LAY-admin-shop-submit)', function (data) {
+                const field = data.field; //获取提交的字段
+                $.ajax({
+                  url: 'http://asryc.antony0127.cn/asryc/product-service/admin/city/save',
+                  type: "post",
+                  contentType: "application/json",
+                  headers: {
+                    "api-version": layui.data('layuiAdmin').apiVersion,
+                    "Authorization": layui.data('layuiAdmin').token
+                  },
+                  dataType: "json",
+                  data: JSON.stringify(field),
+                  success: function (res) {
+                    console.log(res)
+                    if (res.status == 200) {
+                      layer.msg("添加成功", {
+                        offset: '15px',
+                        icon: 1,
+                        time: 1000
+                      }, function () {
+                        // location.hash = search.redirect ? decodeURIComponent(search.redirect) : '/';
+                        layui.table.reload('LAY-city-manage'); //重载表格
+                      });
+                    } else {
+                      layer.msg(res.desc, {
+                        offset: '15px',
+                        icon: 0,
+                        time: 1000
+                      }, function () {
+                        // location.hash = search.redirect ? decodeURIComponent(search.redirect) : '/';
+                      });
+                    }
+                  }
+                })
+                layer.close(index); //执行关闭 
+              });
+            });
+          }
+        });
+      }
+    };
+
+    $('.layui-btn.layuiadmin-btn-useradmin').on('click', function () {
+      var type = $(this).data('type');
+      active[type] ? active[type].call(this) : '';
+    });
+  });
+</script>

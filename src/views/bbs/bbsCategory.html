@@ -1,0 +1,155 @@
+<title>论坛类别</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>论坛</cite></a>
+    <a><cite>论坛类别管理</cite></a>
+  </div>
+</div>
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+      </div>
+
+      <table id="LAY-bbs-category-manage" lay-filter="LAY-bbs-category-manage"></table>
+      <script type="text/html" id="imgTpl">
+        <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.headImg }}>
+      </script>
+
+
+      <script type="text/html" id="cityTpl">
+        <span>{{ d.city.name}}</span>
+      </script>
+      <script type="text/html" id="shopTpl">
+        <span>{{ d.shop.name}}</span>
+      </script>
+
+      <script type="text/html" id="categoryTpl">
+        <span>{{ d.category.name}}</span>
+      </script>
+
+
+      <script type="text/html" id="blnHotTpl">
+        <span>
+          {{# if(d.blnHot){ }}
+          <i class="layui-icon layui-icon-fire layui-bg-red"></i>
+          {{# } }}
+        </span>
+      </script>
+      <script type="text/html" id="table-bbs-list">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+            class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i
+            class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use('bbs', layui.factory('bbs')).use(['admin', 'form', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form;
+
+    form.render(null, 'layadmin-activity-formlist');
+
+
+    //事件
+    var active = {
+      batchdel: function () {
+        var checkStatus = table.checkStatus('LAY-shop-manage'),
+          checkData = checkStatus.data; //得到选中的数据
+
+        if (checkData.length === 0) {
+          return layer.msg('请选择数据');
+        }
+
+        layer.prompt({
+          formType: 0,
+          title: '敏感操作，请输入“删除”'
+        }, function (value, index) {
+          layer.close(index);
+          if (value === '删除') {
+            layer.confirm('确定删除吗？', function (index) {
+
+              //执行 Ajax 后重载
+              /*
+              admin.req({
+                url: 'xxx'
+                //,……
+              });
+              */
+              table.reload('LAY-shop-manage');
+              layer.msg('已删除');
+            });
+          } else {
+            layer.msg('输入错误，删除失败');
+          }
+
+        });
+      },
+      add: function () {
+        admin.popup({
+          title: '添加帖子类别',
+          area: ['500px', '500px'],
+          id: 'LAY-popup-user-add',
+          success: function (layero, index) {
+            view(this.id).render('bbs/bbsCategoryForm').done(function () {
+              form.render(null, 'layuiadmin-form-useradmin');
+              //监听提交
+              form.on('submit(LAY-admin-bbs-category-submit)', function (data) {
+                console.log("添加帖子类别")
+                var field = data.field; //获取提交的字段
+
+                $.ajax({
+                  url: 'http://asryc.antony0127.cn/asryc/bbs-service/admin/bbs/category/save',
+                  type: "post",
+                  contentType: "application/json",
+                  headers: {
+                    "api-version": layui.data('layuiAdmin').apiVersion,
+                    "Authorization": layui.data('layuiAdmin').token
+                  },
+                  dataType: "json",
+                  data: JSON.stringify(field),
+                  success: function (res) {
+                    console.log(res)
+                    if (res.status == 200) {
+                      layer.msg("添加成功", {
+                        offset: '15px',
+                        icon: 1,
+                        time: 1000
+                      }, function () {
+                        // location.hash = search.redirect ? decodeURIComponent(search.redirect) : '/';
+                        layui.table.reload('LAY-bbs-category-manage'); //重载表格
+                      });
+                    } else {
+                      layer.msg(res.desc, {
+                        offset: '15px',
+                        icon: 0,
+                        time: 1000
+                      }, function () {
+                        // location.hash = search.redirect ? decodeURIComponent(search.redirect) : '/';
+                      });
+                    }
+                  }
+                })
+                layer.close(index); //执行关闭 
+              });
+            });
+          }
+        });
+      }
+    };
+
+    $('.layui-btn.layuiadmin-btn-useradmin').on('click', function () {
+      var type = $(this).data('type');
+      active[type] ? active[type].call(this) : '';
+    });
+  });
+</script>

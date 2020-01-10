@@ -1,0 +1,178 @@
+<title>活动管理</title>
+
+<div class="layui-card layadmin-header">
+    <div class="layui-breadcrumb" lay-filter="breadcrumb">
+        <a lay-href="">主页</a>
+        <a><cite>活动</cite></a>
+        <a><cite>活动管理</cite></a>
+    </div>
+</div>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-activity-formlist">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="id" placeholder="请输入id" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">标题</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title" placeholder="请输入活动名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">城市</label>
+                    <div class="layui-input-block">
+                        <select id="selectCity" name="cityId">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">商家</label>
+                    <div class="layui-input-block">
+                        <select id="selectShop" name="shopId">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-useradmin" lay-submit
+                        lay-filter="LAY-activity-front-search">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-useradmin" id="myRefresh">
+                        <i class="layui-icon layui-icon-refresh layuiadmin-button-btn"></i>重置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-card-body">
+            <!-- <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-useradmin" data-type="batchdel">删除</button>
+                <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+            </div> -->
+
+            <table id="LAY-activity-manage" lay-filter="LAY-activity-manage"></table>
+            <script type="text/html" id="imgTpl">
+                <img style="display: inline-block; width: 50%; height: 100%;" src={{ "http://asryc.antony0127.cn/asryc/file-service/" +  d.headImg }}>
+            </script>
+
+            <script type="text/html" id="toolbarActivity">
+                <div class="layui-btn-container">
+                </div>
+            </script>
+            <script type="text/html" id="cityTpl">
+                <span>{{ d.city.name}}</span>
+            </script>
+            <script type="text/html" id="shopTpl">
+                <span>{{ d.shop.name}}</span>
+            </script>
+            <script type="text/html" id="categoryTpl">
+                <span>{{ d.category.name}}</span>
+            </script>
+            <script type="text/html" id="blnHotTpl">
+                <span>
+                    {{# if(d.blnHot){ }}
+                    <i class="layui-icon layui-icon-fire layui-bg-red"></i>
+                    {{# } }}
+                </span>
+            </script>
+            <script type="text/html" id="table-avtivity-list">
+                {{# if(d.status == "PUT_OFF"){ }}
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="putAway">上架</a>
+                {{#  } }}
+                {{# if(d.status == "PUT_AWAY"){ }}
+                <a class="layui-btn layui-btn-normal layui-btn-xs  layui-btn-warm" lay-event="putOff">下架 </a>
+                {{#  } }}
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+                <a class="layui-btn  layui-btn-xs" lay-href="/activity/activityDetails/id={{d.id}}" +  ><i class="layui-icon layui-icon-component"></i>详情</a>
+            </script>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use('activity', layui.factory('activity')).use(['admin', 'form', 'table'], function () {
+        var $ = layui.$,
+            admin = layui.admin,
+            view = layui.view,
+            table = layui.table,
+            form = layui.form;
+        form.render(null, 'layadmin-activity-formlist');
+
+        $("#myRefresh").on('click', function () {
+            location.reload()
+        })
+        form.on('submit(LAY-activity-front-search)', function (data) {
+            var field = data.field;
+            console.log(field)
+            if (!field.id && !field.cityId && !field.title && !field.shopId) {
+                layer.msg("请输入内容")
+                return false
+            }
+            //执行重载
+            table.reload('LAY-activity-manage', {
+                where: field
+            });
+        });
+        const mycity = function () {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: 'http://asryc.antony0127.cn/asryc/product-service/admin/city/list',
+                    type: "GET",
+                    contentType: "application/json",
+                    headers: {
+                        "api-version": layui.data('layuiAdmin').apiVersion,
+                        "Authorization": layui.data('layuiAdmin').token
+                    },
+                    dataType: "json",
+                    success: function (res) {
+                        resolve(res)
+                    }
+                })
+            })
+        }
+        const myshop = function () {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: 'http://asryc.antony0127.cn/asryc/shop-service/admin/shop/list',
+                    type: "GET",
+                    contentType: "application/json",
+                    headers: {
+                        "api-version": layui.data('layuiAdmin').apiVersion,
+                        "Authorization": layui.data('layuiAdmin').token
+                    },
+                    dataType: "json",
+                    success: function (res) {
+                        resolve(res)
+                    }
+                })
+            })
+        }
+            ; (async function () {
+                let data = await myshop()
+                console.log(data)
+                data.data.map(x => {
+                    $("#selectShop").append(`<option value=${x.id}>${x.name}</option>`)
+                })
+                form.render('select')
+            })()
+            ; (async function () {
+                let data = await mycity()
+                data.data.map(x => {
+                    $("#selectCity").append(`<option value=${x.id}>${x.name}</option>`)
+                })
+                form.render('select')
+            })()
+
+    });
+
+    //事件
+</script>

@@ -1,0 +1,225 @@
+<title>活动类别</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>活动</cite></a>
+    <a><cite>活动类别管理</cite></a>
+  </div>
+</div>
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+
+      </div>
+
+      <table id="LAY-activity-category-manage" lay-filter="LAY-activity-category-manage"></table>
+      <script type="text/html" id="imgTpl">
+        <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.headImg }}>
+      </script>
+      <script type="text/html" id="cityTpl">
+        <span>{{ d.city.name}}</span>
+      </script>
+      <script type="text/html" id="shopTpl">
+        <span>{{ d.shop.name}}</span>
+      </script>
+
+      <script type="text/html" id="categoryTpl">
+        <span>{{ d.category.name}}</span>
+      </script>
+
+
+      <script type="text/html" id="blnHotTpl">
+        <span>
+          {{# if(d.blnHot){ }}
+          <i class="layui-icon layui-icon-fire layui-bg-red"></i>
+          {{# } }}
+        </span>
+      </script>
+      <script type="text/html" id="table-avtivity-list">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+            class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i
+            class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use('activity', layui.factory('activity')).use(['admin', 'form', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      form = layui.form;
+
+    form.render(null, 'layadmin-activity-formlist');
+
+    // 删除活动类别
+    function deleteCategory(data){
+      console.log("删除的id",data)
+      $.ajax({
+        url: 'http://asryc.antony0127.cn/asryc/product-service/admin/activity/category/delete/'+ data,
+        type: "delete",
+        contentType: "application/json",
+        headers: {
+          "api-version": layui.data('layuiAdmin').apiVersion,
+          "Authorization": layui.data('layuiAdmin').token
+        },
+        // data: JSON.stringify(data),
+        dataType: "json",
+        success: function (res) {
+          if (res.status == 200) {
+            //开启节点操作图标
+            layer.msg("删除成功")
+            layui.table.reload('LAY-activity-category-manage'); //重载表格
+          } else {
+            layer.msg(res.desc)
+          }
+        }
+      })
+    }
+    //保存活动类别
+    function saveCategory(data) {
+      console.log("保存活动类别",data)
+      $.ajax({
+        url: 'http://asryc.antony0127.cn/asryc/product-service/admin/activity/category/save',
+        type: "post",
+        contentType: "application/json",
+        headers: {
+          "api-version": layui.data('layuiAdmin').apiVersion,
+          "Authorization": layui.data('layuiAdmin').token
+        },
+        data: JSON.stringify(data),
+        dataType: "json",
+        success: function (res) {
+          if (res.status == 200) {
+            //开启节点操作图标
+            layer.msg("操作成功")
+            layui.table.reload('LAY-activity-category-manage'); //重载表格
+          } else {
+            layer.msg(res.desc)
+          }
+        }
+      })
+    }
+
+    //监听工具条
+    table.on('tool(LAY-activity-category-manage)', function (obj) {
+      var data = obj.data;
+      if (obj.event === 'del') {
+        layer.prompt({
+          formType: 0,
+          title: '敏感操作，请输入“删除”'
+        }, function (value, index) {
+          layer.close(index);
+          console.log(value);
+          if (value === '删除') {
+            layer.confirm('真的删除行么', function (index) {
+              // console.log(data);
+              const id = data.id
+              deleteCategory(id)
+            
+              
+            });
+          } else {
+            layer.msg('输入错误，删除失败');
+          }
+        });
+      } else if (obj.event === 'edit') {
+        admin.popup({
+          title: '修改分类',
+          area: ['500px', '250px'],
+          id: 'LAY-popup-activicy-category',
+          success: function (layero, index) {
+            view(this.id).render('activity/activityCategoryForm', data).done(function () {
+              form.render(null, 'layuiadmin-form-avtivity-category');
+
+              //监听提交
+              form.on('submit(LAY-admin-activity-category-submit)', function (data) {
+                var field = data.field; //获取提交的字段
+                field.status = "VALID";
+                console.log(field)
+                saveCategory(field);
+                //提交 Ajax 成功后，关闭当前弹层并重载表格
+                //$.ajax({});
+                
+                layer.close(index); //执行关闭 
+              });
+            });
+          }
+        });
+      }
+    });
+
+
+    //事件
+    var active = {
+      batchdel: function () {
+        var checkStatus = table.checkStatus('LAY-shop-manage'),
+          checkData = checkStatus.data; //得到选中的数据
+
+        if (checkData.length === 0) {
+          return layer.msg('请选择数据');
+        }
+
+        layer.prompt({
+          formType: 0,
+          title: '敏感操作，请输入“删除”'
+        }, function (value, index) {
+          layer.close(index);
+          if (value === '删除') {
+            layer.confirm('确定删除吗？', function (index) {
+
+              //执行 Ajax 后重载
+              /*
+              admin.req({
+                url: 'xxx'
+                //,……
+              });
+              */
+              table.reload('LAY-shop-manage');
+              layer.msg('已删除');
+            });
+          } else {
+            layer.msg('输入错误，删除失败');
+          }
+
+        });
+      },
+      add: function () {
+        admin.popup({
+          title: '添加活动类别',
+          area: ['500px', '500px'],
+          id: 'LAY-popup-user-add',
+          success: function (layero, index) {
+            view(this.id).render('activity/activityCategoryForm').done(function () {
+            // view(this.id).render('course/addCategory').done(function () {
+              form.render(null, 'layuiadmin-form-useradmin');
+              //监听提交
+              form.on('submit(LAY-admin-activity-category-submit)', function (data) {
+                var field = data.field; //获取提交的字段
+                saveCategory(field);
+
+                // console.log(field)
+                //提交 Ajax 成功后，关闭当前弹层并重载表格
+                //$.ajax({});
+
+                // layui.table.reload('LAY-app-manage'); //重载表格
+                layer.close(index); //执行关闭 
+              });
+            });
+          }
+        });
+      }
+    };
+
+    $('.layui-btn.layuiadmin-btn-useradmin').on('click', function () {
+      var type = $(this).data('type');
+      active[type] ? active[type].call(this) : '';
+    });
+  });
+</script>

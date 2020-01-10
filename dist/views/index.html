@@ -1,0 +1,62 @@
+<style>
+  .mybox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 650px;
+  }
+
+  .bgimg {
+    height: 360px;
+    /* 这里路径更变为  ./dist  与index.html 同级o。 */
+    background: url('../src/public/img/bg2.png') no-repeat center;
+  }
+
+  .my-title {
+    font-size: 100px;
+    font-weight: 200;
+    color: rgb(167, 167, 167);
+    text-align: center;
+    margin-top: 1%;
+  }
+
+  .my-info {
+    margin-top: 2%;
+    text-align: center;
+    font-size: 22px;
+  }
+</style>
+<title>主页二</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <!-- <a><cite>主页二</cite></a> -->
+  </div>
+</div>
+
+<div class="mybox">
+  <div>
+    <div class="row">
+      <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+        <div class="grid-demo bgimg"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+        <div class="my-title">艾上如意城后台管理系统</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+        <div class="grid-demo my-info">随便谢的文字了。但事实证明并非如此，它依然存放在定义的文件中
+          被一起下载到客户端。这一点从background-image的url属性定虑即将引用它的html文件的路径。。dihiohiosadioh 我以公司维奥~</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</script>
+<script>
+  layui.use('sample', layui.factory('sample'));
+</script>

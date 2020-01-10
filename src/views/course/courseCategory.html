@@ -1,0 +1,205 @@
+<title>活动类别</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">主页</a>
+    <a><cite>课程</cite></a>
+    <a><cite>课程类别管理</cite></a>
+  </div>
+</div>
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="add">添加</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="showTree">查看树状图</button>
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-course-formlist"
+          style="display: inline-block">
+          <div class="layui-form-item">
+            <div class="layui-inline">
+              <div class="layui-input-block">
+                <label class="layui-form-label">标题</label>
+                <div class="layui-input-block">
+                  <input type="text" name="title" placeholder="请输入课程名称" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+            </div>
+            <div class="layui-inline">
+              <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-coures-front-search">
+                <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+              </button>
+            </div>
+            <div class="layui-inline">
+              <button class="layui-btn layuiadmin-btn-useradmin" id="myRefresh">
+                <i class="layui-icon layui-icon-refresh layuiadmin-button-btn"></i>重置
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <table id="LAY-course-category-manage" lay-filter="LAY-course-category-manage"></table>
+      <script type="text/html" id="table-courseCategory">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+            class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i
+            class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use('api', layui.factory('api')).use('course', layui.factory('course')).use(['tree', 'admin', 'form', 'table'], function () {
+    var $ = layui.$,
+      admin = layui.admin,
+      view = layui.view,
+      table = layui.table,
+      tree = layui.tree,
+      api = layui.api,
+      form = layui.form;
+    $("#myRefresh").on('click', function () {
+      location.reload()
+    })
+    form.render(null, 'layadmin-course-formlist');
+    form.on('submit(LAY-coures-front-search)', function (data) {
+      var field = data.field;
+      console.log(field)
+      if (!field.title) {
+        layer.msg("请输入内容")
+        return false
+      }
+      //执行重载
+      table.reload('LAY-course-category-manage', {
+        where: field
+      });
+    });
+
+    form.render(null, 'layadmin-activity-formlist');
+    api.myGet("http://asryc.antony0127.cn/asryc/product-service/admin/course/category/list")
+      .then(res => {
+        const data = res.data
+        console.log(data);
+        var inst1 = tree.render({
+          elem: '#test1'  //绑定元素
+          , data: data
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      })
+
+
+    // 删除课程类别
+    function deleteCategory(data) {
+      console.log("删除的id", data)
+      $.ajax({
+        url: 'http://asryc.antony0127.cn/asryc/product-service/admin/activity/category/delete/' + data,
+        type: "delete",
+        contentType: "application/json",
+        headers: {
+          "api-version": layui.data('layuiAdmin').apiVersion,
+          "Authorization": layui.data('layuiAdmin').token
+        },
+        // data: JSON.stringify(data),
+        dataType: "json",
+        success: function (res) {
+          if (res.status == 200) {
+            //开启节点操作图标
+            layer.msg("删除成功")
+            layui.table.reload('LAY-course-category-manage'); //重载表格
+          } else {
+            layer.msg(res.desc)
+          }
+        }
+      })
+    }
+    //保存课程分类
+    function saveCategory(data) {
+      $.ajax({
+        url: 'http://asryc.antony0127.cn/asryc/product-service/admin/course/category/save',
+        type: "post",
+        contentType: "application/json",
+        headers: {
+          "api-version": layui.data('layuiAdmin').apiVersion,
+          "Authorization": layui.data('layuiAdmin').token
+        },
+        data: JSON.stringify(data),
+        dataType: "json",
+        success: function (res) {
+          if (res.status == 200) {
+            console.log(res);
+
+            //开启节点操作图标
+            layer.msg("添加成功")
+            layui.table.reload('LAY-course-category-manage'); //重载表格
+          } else {
+            layer.msg(res.desc)
+          }
+        }
+      })
+    }
+
+    //事件
+    var active = {
+      showTree: function () {
+        admin.popup({
+          title: '查看分类',
+          area: ['500px', '500px'],
+          id: 'LAY-popup-user-add',
+          success: function (layero, index) {
+            view(this.id).render('course/courseCategoryTree').done(function () {
+            });
+          }
+        });
+      },
+      add: function () {
+        admin.popup({
+          title: '添加课程分类',
+          area: ['500px', '500px'],
+          id: 'LAY-popup-user-add',
+          success: function (layero, index) {
+            view(this.id).render('course/addCategory').done(function () {
+              // view(this.id).render('course/addCategory').done(function () {
+              form.render(null, 'layuiadmin-form-avtivity-category');
+              //监听提交
+
+              form.on('submit(LAY-admin-activity-category-submit)', function (data) {
+                var field = data.field; //获取提交的字段
+                if (field.title.length > 7) {
+                  alert("标题字数小于等于6")
+                  return false
+                }
+                if (field.firstId && !field.secondId) {
+                  field.parentId = field.firstId
+                }
+                else if (field.secondId && field.firstId) {
+                  field.parentId = field.secondId
+                }
+                else if (!field.firstId && !field.secondId) {
+                  field.parentId = ""
+                }
+                delete field.firstId
+                delete field.secondId
+                console.log(field)
+                saveCategory(field);
+
+                // console.log(field)
+                //提交 Ajax 成功后，关闭当前弹层并重载表格
+                //$.ajax({});
+
+                // layui.table.reload('LAY-app-manage'); //重载表格
+                layer.close(index); //执行关闭 
+              });
+            });
+          }
+        });
+      }
+    };
+
+    $('.layui-btn.layuiadmin-btn-useradmin').on('click', function () {
+      var type = $(this).data('type');
+      active[type] ? active[type].call(this) : '';
+    });
+  });
+</script>
