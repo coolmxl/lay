@@ -6,11 +6,9 @@
 #### 简介
 实习做的第一个完整项目~
 
-#### Installation
+#### origin
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  使用lay-ui构建的一套后台管理系统
 
 #### Instructions
 
