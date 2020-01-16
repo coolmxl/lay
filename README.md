@@ -3,8 +3,8 @@
 #### Description
 艾上如意城商家端管理系统 前端
 
-#### Software Architecture
-Software architecture description
+#### 简介
+实习做的第一个完整项目~
 
 #### Installation
 
